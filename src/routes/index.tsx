@@ -186,7 +186,7 @@ function Gallery() {
                 alt={selected.title}
                 width={1024}
                 height={1024}
-                className="aspect-square h-full w-full object-cover"
+                className="aspect-[4/3] h-full w-full object-cover md:aspect-square"
               />
               <div className="flex flex-col justify-center gap-4 p-8">
                 <p className="eyebrow">
