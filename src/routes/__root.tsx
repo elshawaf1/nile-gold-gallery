@@ -81,7 +81,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Dahab Gold House — Fine Gold Jewelry in Cairo" },
+      { title: "Dahab — Fine Gold Jewelry in Cairo" },
       { name: "description", content: "Browse 18k, 21k and 24k gold jewelry from Dahab Gold House, Cairo." },
       { property: "og:title", content: "Dahab Gold House" },
       { property: "og:description", content: "Fine gold jewelry gallery from Cairo, Egypt." },
@@ -93,7 +93,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Karla:wght@300;400;500;600&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Amiri:wght@400&family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600&display=swap",
       },
       {
         rel: "stylesheet",
