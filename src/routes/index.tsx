@@ -3,7 +3,9 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { X } from "lucide-react";
 
 import { ProductCard } from "@/components/store/ProductCard";
+import { Reveal } from "@/components/store/Reveal";
 import { CATEGORIES, KARATS, PRODUCTS, priceOf } from "@/lib/products";
+import { PRICE_RANGES, searchProducts, type PriceRangeKey } from "@/lib/search";
 import { formatEGP, GOLD_RATES, type Karat } from "@/lib/shop";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +22,7 @@ type StoreSearch = {
   category?: string | undefined;
   karat?: Karat | undefined;
   sort?: SortKey | undefined;
+  price?: PriceRangeKey | undefined;
 };
 
 export const Route = createFileRoute("/")({
@@ -28,7 +31,9 @@ export const Route = createFileRoute("/")({
     const category = s["category"];
     const karat = s["karat"];
     const sort = s["sort"];
+    const price = s["price"];
     return {
+      price: typeof price === "string" && price in PRICE_RANGES ? (price as PriceRangeKey) : undefined,
       q: typeof q === "string" && q ? q : undefined,
       category: typeof category === "string" && (CATEGORIES as readonly string[]).includes(category) ? category : undefined,
       karat: typeof karat === "string" && (KARATS as string[]).includes(karat) ? (karat as Karat) : undefined,
@@ -54,27 +59,26 @@ export const Route = createFileRoute("/")({
 function Store() {
   const search = Route.useSearch();
   const navigate = useNavigate({ from: "/" });
-  const { q, category, karat, sort = "featured" } = search;
+  const { q, category, karat, price, sort = "featured" } = search;
 
   const results = useMemo(() => {
-    const term = q?.toLowerCase();
-    let list = PRODUCTS.filter(
-      (p) =>
+    const range = price ? PRICE_RANGES[price] : undefined;
+    let list = searchProducts(PRODUCTS, q ?? "").filter((p) => {
+      const pp = priceOf(p);
+      return (
         (!category || p.category === category) &&
         (!karat || p.karat === karat) &&
-        (!term ||
-          p.title.toLowerCase().includes(term) ||
-          p.category.toLowerCase().includes(term) ||
-          p.titleAr.includes(q!) ||
-          p.karat.toLowerCase() === term),
-    );
+        (!range || (pp >= range.min && pp < range.max))
+      );
+    });
     if (sort === "price-asc") list = [...list].sort((a, b) => priceOf(a) - priceOf(b));
     if (sort === "price-desc") list = [...list].sort((a, b) => priceOf(b) - priceOf(a));
     if (sort === "rating") list = [...list].sort((a, b) => b.rating - a.rating);
     return list;
-  }, [q, category, karat, sort]);
+  }, [q, category, karat, price, sort]);
 
   const setKarat = (k?: Karat) => navigate({ search: (prev) => ({ ...prev, karat: k }) });
+  const setPrice = (r?: PriceRangeKey) => navigate({ search: (prev) => ({ ...prev, price: r }) });
 
   const heading = q ? `Results for “${q}”` : category ?? "All gold";
 
@@ -90,6 +94,16 @@ function Store() {
             {KARATS.map((k) => (
               <FilterLink key={k} active={karat === k} onClick={() => setKarat(k)}>
                 {k} <span className="text-muted-foreground">· {formatEGP(GOLD_RATES[k])}/g</span>
+              </FilterLink>
+            ))}
+          </FilterGroup>
+          <FilterGroup title="Price">
+            <FilterLink active={!price} onClick={() => setPrice(undefined)}>
+              Any price
+            </FilterLink>
+            {(Object.keys(PRICE_RANGES) as PriceRangeKey[]).map((r) => (
+              <FilterLink key={r} active={price === r} onClick={() => setPrice(r)}>
+                {PRICE_RANGES[r].label}
               </FilterLink>
             ))}
           </FilterGroup>
