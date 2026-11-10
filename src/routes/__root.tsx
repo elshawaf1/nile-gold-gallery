@@ -12,6 +12,11 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
+import { CartSheet } from "@/components/store/CartSheet";
+import { SiteFooter } from "@/components/store/SiteFooter";
+import { SiteHeader } from "@/components/store/SiteHeader";
+import { Toaster } from "@/components/ui/sonner";
+import { CartProvider } from "@/lib/cart";
 
 function NotFoundComponent() {
   return (
@@ -84,7 +89,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "Dahab — Fine Gold Jewelry in Cairo" },
       { name: "description", content: "Browse 18k, 21k and 24k gold jewelry from Dahab Gold House, Cairo." },
       { property: "og:title", content: "Dahab Gold House" },
-      { property: "og:description", content: "Fine gold jewelry gallery from Cairo, Egypt." },
+      { property: "og:description", content: "Gold jewelry store in Cairo, Egypt." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -127,8 +132,18 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <CartProvider>
+        <div className="flex min-h-screen flex-col bg-background text-foreground">
+          <SiteHeader />
+          <main className="flex-1">
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+          </main>
+          <SiteFooter />
+        </div>
+        <CartSheet />
+        <Toaster position="top-center" />
+      </CartProvider>
     </QueryClientProvider>
   );
 }
