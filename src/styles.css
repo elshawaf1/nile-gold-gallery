@@ -31,6 +31,12 @@
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-gold: var(--gold);
+  --color-gold-foreground: var(--gold-foreground);
+  --color-gold-soft: var(--gold-soft);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-ink-foreground: var(--ink-foreground);
+  --color-rating: var(--rating);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -69,7 +75,13 @@
   --popover-foreground: oklch(0.18 0.008 70);
   --primary: oklch(0.18 0.008 70);
   --primary-foreground: oklch(0.985 0.004 85);
-  --gold: oklch(0.7 0.12 78);
+  --gold: oklch(0.78 0.13 80);
+  --gold-foreground: oklch(0.18 0.008 70);
+  --gold-soft: oklch(0.95 0.035 85);
+  --ink: oklch(0.17 0.008 70);
+  --ink-soft: oklch(0.24 0.01 70);
+  --ink-foreground: oklch(0.96 0.01 85);
+  --rating: oklch(0.72 0.14 70);
   --secondary: oklch(0.95 0.006 85);
   --secondary-foreground: oklch(0.18 0.008 70);
   --muted: oklch(0.95 0.006 85);
