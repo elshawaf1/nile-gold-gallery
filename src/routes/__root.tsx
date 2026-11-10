@@ -89,7 +89,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { title: "Dahab — Fine Gold Jewelry in Cairo" },
       { name: "description", content: "Browse 18k, 21k and 24k gold jewelry from Dahab Gold House, Cairo." },
       { property: "og:title", content: "Dahab Gold House" },
-      { property: "og:description", content: "Fine gold jewelry gallery from Cairo, Egypt." },
+      { property: "og:description", content: "Gold jewelry store in Cairo, Egypt." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
