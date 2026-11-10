@@ -17,6 +17,8 @@ import { SiteFooter } from "@/components/store/SiteFooter";
 import { SiteHeader } from "@/components/store/SiteHeader";
 import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "@/lib/cart";
+import { WishlistProvider } from "@/lib/wishlist";
+import { BackToTop } from "@/components/store/BackToTop";
 
 function NotFoundComponent() {
   return (
@@ -133,6 +135,7 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <CartProvider>
+       <WishlistProvider>
         <div className="flex min-h-screen flex-col bg-background text-foreground">
           <SiteHeader />
           <main className="flex-1">
@@ -142,7 +145,9 @@ function RootComponent() {
           <SiteFooter />
         </div>
         <CartSheet />
+        <BackToTop />
         <Toaster position="top-center" />
+       </WishlistProvider>
       </CartProvider>
     </QueryClientProvider>
   );
