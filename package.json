@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite dev",
     "build": "vite build",
+    "build:pages": "node scripts/fetch-static-gold-rates.mjs && GITHUB_PAGES=true VITE_STATIC_DEMO=true vite build && node scripts/prepare-github-pages.mjs",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",

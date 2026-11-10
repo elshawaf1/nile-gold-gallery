@@ -47,7 +47,13 @@ export function SiteHeader() {
                 live ? "bg-gold/15 text-gold-strong" : "bg-muted text-muted-foreground",
               )}
             >
-              {source === "manual" ? t("gold.manual") : live ? t("gold.live") : t("gold.offline")}
+              {source === "static-demo"
+                ? t("gold.snapshot")
+                : source === "manual"
+                  ? t("gold.manual")
+                  : live
+                    ? t("gold.live")
+                    : t("gold.offline")}
             </span>
           </span>
           {(Object.keys(rates) as Karat[]).map((k) => (

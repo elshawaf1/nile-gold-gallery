@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Card, Field, TextInput } from "@/components/admin/ui";
 import { useI18n } from "@/lib/i18n";
 import { getSession, login } from "@/server/auth";
+import { STATIC_DEMO } from "@/lib/static-demo";
 
 export const Route = createFileRoute("/admin/login")({
   beforeLoad: async () => {
+    if (STATIC_DEMO) return;
     const session = await getSession();
     if (session.authenticated) throw redirect({ to: "/admin" });
   },

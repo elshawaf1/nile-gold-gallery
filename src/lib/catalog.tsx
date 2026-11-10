@@ -5,6 +5,7 @@ import type { CatalogData, Category, PriceRange, ShopSettings } from "@/lib/cata
 import { getCatalog } from "@/server/catalog";
 import type { Product } from "@/lib/products";
 import { SHOP } from "@/lib/shop";
+import { STATIC_DEMO, STATIC_DEMO_CATALOG } from "@/lib/static-demo";
 
 const FALLBACK_SETTINGS: ShopSettings = {
   name: SHOP.name,
@@ -40,7 +41,7 @@ export function CatalogProvider({
 }) {
   const query = useQuery({
     queryKey: ["catalog"],
-    queryFn: () => getCatalog(),
+    queryFn: () => (STATIC_DEMO ? Promise.resolve(STATIC_DEMO_CATALOG) : getCatalog()),
     initialData: initialCatalog,
     staleTime: 60 * 1000,
   });

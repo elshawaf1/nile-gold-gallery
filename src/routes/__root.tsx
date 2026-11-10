@@ -20,6 +20,7 @@ import type { CatalogData } from "@/lib/catalog-types";
 import { getCatalog } from "@/server/catalog";
 import { getGoldRates, type GoldRatePayload } from "@/lib/gold-api";
 import { GoldRatesProvider } from "@/lib/gold-rates";
+import { STATIC_DEMO, STATIC_DEMO_CATALOG, STATIC_DEMO_RATES } from "@/lib/static-demo";
 import { THEME_INIT_SCRIPT, ThemeProvider } from "@/lib/theme";
 import { I18nProvider } from "@/lib/i18n";
 import { WishlistProvider } from "@/lib/wishlist";
@@ -77,12 +78,12 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
           >
             إعادة المحاولة · Try again
           </button>
-          <a
-            href="/"
+          <Link
+            to="/"
             className="inline-flex items-center justify-center rounded-full border border-input bg-background px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
             الرئيسية · Go home
-          </a>
+          </Link>
         </div>
       </div>
     </div>
@@ -91,6 +92,10 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
   loader: async ({ context }) => {
+    if (STATIC_DEMO) {
+      return { catalog: STATIC_DEMO_CATALOG, goldRates: STATIC_DEMO_RATES };
+    }
+
     const [catalog, goldRates] = await Promise.all([
       context.queryClient.ensureQueryData({
         queryKey: ["catalog"],
@@ -130,7 +135,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "icon", href: `${import.meta.env.BASE_URL}favicon.svg`, type: "image/svg+xml" },
     ],
   }),
   shellComponent: RootShell,

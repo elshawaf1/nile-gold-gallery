@@ -11,6 +11,7 @@ import { useI18n } from "@/lib/i18n";
 import { priceOf, type Product } from "@/lib/products";
 import { formatEGP, whatsappLink } from "@/lib/shop";
 import { trackEnquiry } from "@/server/enquiries";
+import { STATIC_DEMO } from "@/lib/static-demo";
 
 export function QuickView({
   product,
@@ -73,16 +74,18 @@ export function QuickView({
                 target="_blank"
                 rel="noreferrer"
                 onClick={() => {
-                  void trackEnquiry({
-                    data: {
-                      productId: product.id,
-                      productTitle: title,
-                      karat: product.karat,
-                      weight: product.weight,
-                      price,
-                      source: "quick_view",
-                    },
-                  });
+                  if (!STATIC_DEMO) {
+                    void trackEnquiry({
+                      data: {
+                        productId: product.id,
+                        productTitle: title,
+                        karat: product.karat,
+                        weight: product.weight,
+                        price,
+                        source: "quick_view",
+                      },
+                    });
+                  }
                 }}
               >
                 <MessageCircle /> {t("product.order")}

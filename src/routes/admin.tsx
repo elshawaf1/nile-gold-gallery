@@ -21,9 +21,11 @@ import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { getSession, logout } from "@/server/auth";
+import { STATIC_DEMO } from "@/lib/static-demo";
 
 export const Route = createFileRoute("/admin")({
   beforeLoad: async ({ location }) => {
+    if (STATIC_DEMO) return;
     if (location.pathname === "/admin/login") return;
     const session = await getSession();
     if (!session.authenticated) throw redirect({ to: "/admin/login" });
@@ -44,6 +46,19 @@ function AdminLayout() {
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const { t, lang, toggle } = useI18n();
   const navigate = useNavigate();
+
+  if (STATIC_DEMO) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-background px-4 text-center">
+        <p className="text-lg font-semibold">
+          لوحة الإدارة غير متاحة في النسخة التجريبية · Admin is unavailable in this demo.
+        </p>
+        <Link to="/" className="text-gold-strong underline">
+          العودة للمتجر · Back to the store
+        </Link>
+      </div>
+    );
+  }
 
   if (pathname === "/admin/login") return <Outlet />;
 

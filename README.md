@@ -61,6 +61,15 @@ ADMIN_PASSWORD=... ADMIN_SESSION_SECRET=... PORT=3000 npm start
 
 Back up `data/shop.db` and `data/uploads` regularly.
 
+## GitHub Pages demo
+
+The `main` branch deploys a static storefront to GitHub Pages. It includes the bundled products
+and a Gold Bullion buy-rate snapshot fetched during the build; the displayed rate does not update
+until the next deployment. Admin, SQLite-backed catalog changes, uploads and enquiry tracking need
+the server-hosted app and are unavailable in the static demo. WhatsApp ordering remains available.
+
+To build the demo locally, run `npm run build:pages`. The generated site is in `dist/client`.
+
 ## Gold price API
 
 `GET`-style server function `getGoldRates` resolves prices in this order:

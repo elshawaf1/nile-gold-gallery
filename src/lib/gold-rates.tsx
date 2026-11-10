@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 
 import { getGoldRates, type GoldRatePayload } from "@/lib/gold-api";
 import { GOLD_RATES, type Karat } from "@/lib/shop";
+import { STATIC_DEMO, STATIC_DEMO_RATES } from "@/lib/static-demo";
 
 export type GoldRates = Record<Karat, number>;
 
@@ -26,10 +27,10 @@ export function GoldRatesProvider({
 }) {
   const query = useQuery({
     queryKey: ["gold-rates"],
-    queryFn: () => getGoldRates(),
+    queryFn: () => (STATIC_DEMO ? Promise.resolve(STATIC_DEMO_RATES) : getGoldRates()),
     initialData: initialRates,
-    staleTime: 60 * 1000,
-    refetchInterval: 60 * 1000,
+    staleTime: STATIC_DEMO ? Infinity : 60 * 1000,
+    refetchInterval: STATIC_DEMO ? false : 60 * 1000,
     refetchOnWindowFocus: true,
     retry: 1,
   });

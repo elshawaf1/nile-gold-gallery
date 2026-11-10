@@ -17,6 +17,7 @@ const messages = {
   "gold.live": { ar: "جولد بيليون", en: "Gold Bullion" },
   "gold.manual": { ar: "سعر المتجر", en: "Store rate" },
   "gold.offline": { ar: "آخر سعر معروف", en: "Last known rate" },
+  "gold.snapshot": { ar: "سعر تجريبي وقت النشر", en: "Build-time demo price" },
   "gold.updated": { ar: "آخر تحديث", en: "Updated" },
   "help.need": { ar: "تحتاج مساعدة؟", en: "Need help?" },
   "action.whatsapp": { ar: "واتساب", en: "WhatsApp" },

@@ -12,6 +12,7 @@ import { useI18n } from "@/lib/i18n";
 import { categoryLabel, priceOf, type Product } from "@/lib/products";
 import { formatEGP, whatsappLink } from "@/lib/shop";
 import { trackEnquiry } from "@/server/enquiries";
+import { STATIC_DEMO } from "@/lib/static-demo";
 
 export function ProductCard({ product }: { product: Product }) {
   const { rates } = useGoldRates();
@@ -75,16 +76,18 @@ export function ProductCard({ product }: { product: Product }) {
             target="_blank"
             rel="noreferrer"
             onClick={() => {
-              void trackEnquiry({
-                data: {
-                  productId: product.id,
-                  productTitle: title,
-                  karat: product.karat,
-                  weight: product.weight,
-                  price: priceOf(product, rates),
-                  source: "product_card",
-                },
-              });
+              if (!STATIC_DEMO) {
+                void trackEnquiry({
+                  data: {
+                    productId: product.id,
+                    productTitle: title,
+                    karat: product.karat,
+                    weight: product.weight,
+                    price: priceOf(product, rates),
+                    source: "product_card",
+                  },
+                });
+              }
             }}
           >
             <MessageCircle /> {t("product.order")}

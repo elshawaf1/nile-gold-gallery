@@ -11,9 +11,15 @@ import { priceBreakdown, priceOf } from "@/lib/products";
 import { formatEGP, whatsappLink } from "@/lib/shop";
 import { getProductById } from "@/server/catalog";
 import { trackEnquiry } from "@/server/enquiries";
+import { getProduct, STATIC_DEMO } from "@/lib/static-demo";
 
 export const Route = createFileRoute("/product/$id")({
   loader: async ({ params }) => {
+    if (STATIC_DEMO) {
+      const product = getProduct(params.id);
+      if (!product) throw notFound();
+      return { product };
+    }
     const product = await getProductById({ data: { id: params.id } });
     if (!product) throw notFound();
     return { product };
@@ -133,16 +139,18 @@ function ProductPage() {
               target="_blank"
               rel="noreferrer"
               onClick={() => {
-                void trackEnquiry({
-                  data: {
-                    productId: product.id,
-                    productTitle: title,
-                    karat: product.karat,
-                    weight: product.weight,
-                    price,
-                    source: "product_page",
-                  },
-                });
+                if (!STATIC_DEMO) {
+                  void trackEnquiry({
+                    data: {
+                      productId: product.id,
+                      productTitle: title,
+                      karat: product.karat,
+                      weight: product.weight,
+                      price,
+                      source: "product_page",
+                    },
+                  });
+                }
               }}
             >
               <MessageCircle /> {t("product.order")}
