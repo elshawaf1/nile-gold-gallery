@@ -15,15 +15,26 @@ const SORTS = {
 } as const;
 type SortKey = keyof typeof SORTS;
 
-type StoreSearch = { q?: string; category?: string; karat?: Karat; sort?: SortKey };
+type StoreSearch = {
+  q?: string | undefined;
+  category?: string | undefined;
+  karat?: Karat | undefined;
+  sort?: SortKey | undefined;
+};
 
 export const Route = createFileRoute("/")({
-  validateSearch: (s: Record<string, unknown>): StoreSearch => ({
-    q: typeof s.q === "string" && s.q ? s.q : undefined,
-    category: typeof s.category === "string" && (CATEGORIES as readonly string[]).includes(s.category) ? s.category : undefined,
-    karat: typeof s.karat === "string" && (KARATS as string[]).includes(s.karat) ? (s.karat as Karat) : undefined,
-    sort: typeof s.sort === "string" && s.sort in SORTS ? (s.sort as SortKey) : undefined,
-  }),
+  validateSearch: (s: Record<string, unknown>): StoreSearch => {
+    const q = s["q"];
+    const category = s["category"];
+    const karat = s["karat"];
+    const sort = s["sort"];
+    return {
+      q: typeof q === "string" && q ? q : undefined,
+      category: typeof category === "string" && (CATEGORIES as readonly string[]).includes(category) ? category : undefined,
+      karat: typeof karat === "string" && (KARATS as string[]).includes(karat) ? (karat as Karat) : undefined,
+      sort: typeof sort === "string" && sort in SORTS ? (sort as SortKey) : undefined,
+    };
+  },
   head: () => ({
     meta: [
       { title: "Dahab — Shop 18K, 21K & 24K Gold in Egypt" },
