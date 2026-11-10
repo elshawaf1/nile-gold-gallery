@@ -1,7 +1,7 @@
-import type { Product, ProductCategory } from "@/lib/products";
+import type { Product } from "@/lib/products";
 
 /** Extra English/Arabic words shoppers use for each category. */
-export const CATEGORY_KEYWORDS: Record<ProductCategory, string[]> = {
+export const CATEGORY_KEYWORDS: Record<string, string[]> = {
   Necklaces: ["necklace", "chain", "pendant", "سلسلة", "سلسله", "عقد", "كوليه"],
   Rings: ["ring", "band", "signet", "خاتم", "خواتم", "دبلة", "دبله"],
   Bracelets: ["bracelet", "bangle", "غويشة", "غوايش", "اسورة", "انسيال"],
@@ -39,7 +39,7 @@ export function searchProducts(products: Product[], query: string): Product[] {
     const title = normalize(p.title);
     const titleAr = normalize(p.titleAr);
     const category = normalize(p.category);
-    const keywords = CATEGORY_KEYWORDS[p.category].map(normalize).join(" ");
+    const keywords = (CATEGORY_KEYWORDS[p.category] ?? []).map(normalize).join(" ");
     const karat = p.karat.toLowerCase();
     const desc = normalize(p.description);
 
@@ -63,19 +63,38 @@ export function searchProducts(products: Product[], query: string): Product[] {
   return scored.sort((a, b) => b.score - a.score).map((x) => x.p);
 }
 
-export function matchingCategories(categories: readonly ProductCategory[], query: string) {
+export function matchingCategories(categories: readonly string[], query: string) {
   const words = tokens(query);
   if (words.length === 0) return [];
   return categories.filter((c) => {
-    const hay = [normalize(c), ...CATEGORY_KEYWORDS[c].map(normalize)].join(" ");
+    const hay = [normalize(c), ...(CATEGORY_KEYWORDS[c] ?? []).map(normalize)].join(" ");
     return words.some((w) => hay.includes(w));
   });
 }
 
 export const PRICE_RANGES = {
-  "under-25k": { label: "Under EGP 25,000", min: 0, max: 25_000 },
-  "25k-75k": { label: "EGP 25,000 – 75,000", min: 25_000, max: 75_000 },
-  "75k-150k": { label: "EGP 75,000 – 150,000", min: 75_000, max: 150_000 },
-  "over-150k": { label: "Over EGP 150,000", min: 150_000, max: Infinity },
+  "under-25k": { label: "Under EGP 25,000", labelAr: "أقل من ٢٥٬٠٠٠ ج.م", min: 0, max: 25_000 },
+  "25k-75k": {
+    label: "EGP 25,000 – 75,000",
+    labelAr: "٢٥٬٠٠٠ – ٧٥٬٠٠٠ ج.م",
+    min: 25_000,
+    max: 75_000,
+  },
+  "75k-150k": {
+    label: "EGP 75,000 – 150,000",
+    labelAr: "٧٥٬٠٠٠ – ١٥٠٬٠٠٠ ج.م",
+    min: 75_000,
+    max: 150_000,
+  },
+  "over-150k": {
+    label: "Over EGP 150,000",
+    labelAr: "أكثر من ١٥٠٬٠٠٠ ج.م",
+    min: 150_000,
+    max: Infinity,
+  },
 } as const;
 export type PriceRangeKey = keyof typeof PRICE_RANGES;
+
+export function priceRangeLabel(key: PriceRangeKey, lang: "ar" | "en") {
+  return lang === "ar" ? PRICE_RANGES[key].labelAr : PRICE_RANGES[key].label;
+}

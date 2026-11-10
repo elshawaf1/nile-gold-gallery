@@ -2,13 +2,19 @@ import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react"
 import { useNavigate, useRouterState } from "@tanstack/react-router";
 import { ArrowUpRight, Clock, Search, TrendingUp, X } from "lucide-react";
 
-import { CATEGORIES, PRODUCTS, priceOf } from "@/lib/products";
+import { labelForCategory, useCatalog } from "@/lib/catalog";
+import { useGoldRates } from "@/lib/gold-rates";
+import { useI18n } from "@/lib/i18n";
+import { priceOf } from "@/lib/products";
 import { matchingCategories, searchProducts } from "@/lib/search";
 import { formatEGP } from "@/lib/shop";
 import { cn } from "@/lib/utils";
 
 const RECENT_KEY = "dahab-recent-searches";
-const POPULAR = ["Gold pound", "21K", "Name necklace", "Bangles", "سبيكة", "Bridal set"];
+const POPULAR = {
+  en: ["Gold pound", "21K", "Name necklace", "Bangles", "سبيكة", "Bridal set"],
+  ar: ["جنيه ذهب", "عيار ٢١", "سلسلة بالاسم", "غوايش", "سبيكة", "طقم شبكة"],
+};
 
 function Highlight({ text, query }: { text: string; query: string }) {
   const q = query.trim();
@@ -26,6 +32,10 @@ function Highlight({ text, query }: { text: string; query: string }) {
 
 export function SearchBox() {
   const navigate = useNavigate();
+  const { rates } = useGoldRates();
+  const { lang, t } = useI18n();
+  const { products: catalogProducts, categories } = useCatalog();
+  const popular = POPULAR[lang];
   const urlQ = useRouterState({ select: (s) => (s.location.search as { q?: string }).q ?? "" });
   const [q, setQ] = useState(urlQ);
   const [open, setOpen] = useState(false);
@@ -67,15 +77,30 @@ export function SearchBox() {
   }, []);
 
   const term = q.trim();
-  const allMatches = useMemo(() => (term ? searchProducts(PRODUCTS, term) : []), [term]);
+  const allMatches = useMemo(
+    () => (term ? searchProducts(catalogProducts, term) : []),
+    [term, catalogProducts],
+  );
   const products = allMatches.slice(0, 5);
-  const cats = useMemo(() => (term ? matchingCategories(CATEGORIES, term).slice(0, 3) : []), [term]);
+  const cats = useMemo(
+    () =>
+      term
+        ? matchingCategories(
+            categories.map((category) => category.slug),
+            term,
+          ).slice(0, 3)
+        : [],
+    [term, categories],
+  );
 
   // Keyboard-navigable options: products, then "see all"
   const optionCount = term ? products.length + 1 : 0;
 
   function saveRecent(value: string) {
-    const next = [value, ...recent.filter((r) => r.toLowerCase() !== value.toLowerCase())].slice(0, 5);
+    const next = [value, ...recent.filter((r) => r.toLowerCase() !== value.toLowerCase())].slice(
+      0,
+      5,
+    );
     setRecent(next);
     window.localStorage.setItem(RECENT_KEY, JSON.stringify(next));
   }
@@ -124,7 +149,7 @@ export function SearchBox() {
           runSearch(q);
         }}
         className={cn(
-          "flex h-11 overflow-hidden rounded-lg bg-background ring-2 ring-transparent transition-shadow",
+          "flex h-11 overflow-hidden rounded-lg border border-border bg-card ring-2 ring-transparent transition-shadow",
           open && "ring-gold",
         )}
       >
@@ -138,8 +163,8 @@ export function SearchBox() {
           }}
           onFocus={() => setOpen(true)}
           onKeyDown={onKeyDown}
-          placeholder="Search gold… try “pound”, “21K” or “خاتم”"
-          aria-label="Search gold"
+          placeholder={t("search.placeholder")}
+          aria-label={t("search.aria")}
           role="combobox"
           aria-expanded={open}
           aria-controls="search-suggestions"
@@ -149,7 +174,7 @@ export function SearchBox() {
         {q && (
           <button
             type="button"
-            aria-label="Clear search"
+            aria-label={t("search.clear")}
             onClick={() => {
               setQ("");
               inputRef.current?.focus();
@@ -159,10 +184,14 @@ export function SearchBox() {
             <X className="size-4" />
           </button>
         )}
-        <kbd className="my-auto mr-2 hidden rounded border border-border px-1.5 text-[11px] text-muted-foreground lg:block">
+        <kbd className="my-auto me-2 hidden rounded border border-border px-1.5 text-[11px] text-muted-foreground lg:block">
           /
         </kbd>
-        <button type="submit" aria-label="Search" className="grid w-12 place-items-center bg-gold text-gold-foreground">
+        <button
+          type="submit"
+          aria-label={t("search.submit")}
+          className="grid w-12 place-items-center bg-gold text-gold-foreground"
+        >
           <Search className="size-5" />
         </button>
       </form>
@@ -178,7 +207,9 @@ export function SearchBox() {
               {recent.length > 0 && (
                 <div>
                   <div className="mb-2 flex items-center justify-between">
-                    <p className="text-xs font-semibold text-muted-foreground">Recent searches</p>
+                    <p className="text-xs font-semibold text-muted-foreground">
+                      {t("search.recent")}
+                    </p>
                     <button
                       onClick={() => {
                         setRecent([]);
@@ -186,7 +217,7 @@ export function SearchBox() {
                       }}
                       className="text-xs text-muted-foreground hover:text-foreground"
                     >
-                      Clear
+                      {t("search.clearRecent")}
                     </button>
                   </div>
                   <ul>
@@ -194,7 +225,7 @@ export function SearchBox() {
                       <li key={r}>
                         <button
                           onClick={() => runSearch(r)}
-                          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-muted"
+                          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-start text-sm hover:bg-muted"
                         >
                           <Clock className="size-4 text-muted-foreground" /> {r}
                         </button>
@@ -205,10 +236,10 @@ export function SearchBox() {
               )}
               <div>
                 <p className="mb-2 flex items-center gap-1 text-xs font-semibold text-muted-foreground">
-                  <TrendingUp className="size-3.5" /> Popular searches
+                  <TrendingUp className="size-3.5" /> {t("search.popular")}
                 </p>
                 <div className="flex flex-wrap gap-2">
-                  {POPULAR.map((p) => (
+                  {popular.map((p) => (
                     <button
                       key={p}
                       onClick={() => runSearch(p)}
@@ -233,14 +264,14 @@ export function SearchBox() {
                       }}
                       className="rounded-full bg-gold-soft px-3 py-1 text-xs font-medium"
                     >
-                      in {c}
+                      {t("search.in", { c: labelForCategory(categories, c, lang) })}
                     </button>
                   ))}
                 </div>
               )}
               {products.length === 0 ? (
                 <p className="px-3 py-6 text-center text-sm text-muted-foreground">
-                  No pieces match “{term}”. Try “ring”, “21K” or “جنيه”.
+                  {t("search.none", { q: term })}
                 </p>
               ) : (
                 <ul>
@@ -250,20 +281,29 @@ export function SearchBox() {
                         onMouseEnter={() => setActive(i)}
                         onClick={() => openProduct(p.id)}
                         className={cn(
-                          "flex w-full items-center gap-3 rounded-lg p-2 text-left transition-colors",
+                          "flex w-full items-center gap-3 rounded-lg p-2 text-start transition-colors",
                           active === i && "bg-muted",
                         )}
                       >
-                        <img src={p.image} alt="" width={48} height={48} className="size-12 shrink-0 rounded-md object-cover" />
+                        <img
+                          src={p.image}
+                          alt=""
+                          width={48}
+                          height={48}
+                          className="size-12 shrink-0 rounded-md object-cover"
+                        />
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-sm font-medium">
                             <Highlight text={p.title} query={term} />
                           </span>
                           <span className="block text-xs text-muted-foreground">
-                            {p.karat} · {p.weight}g · {p.category}
+                            {p.karat} · {p.weight}
+                            {t("unit.g")} · {labelForCategory(categories, p.category, lang)}
                           </span>
                         </span>
-                        <span className="shrink-0 text-sm font-semibold">{formatEGP(priceOf(p))}</span>
+                        <span className="shrink-0 text-sm font-semibold">
+                          {formatEGP(priceOf(p, rates), lang)}
+                        </span>
                       </button>
                     </li>
                   ))}
@@ -279,9 +319,7 @@ export function SearchBox() {
                   active === products.length && "bg-muted",
                 )}
               >
-                <span>
-                  See all {allMatches.length} results for <strong>“{term}”</strong>
-                </span>
+                <span>{t("search.seeAll", { n: allMatches.length, q: term })}</span>
                 <ArrowUpRight className="size-4" />
               </button>
             </>

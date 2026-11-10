@@ -1,4 +1,12 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 
 import { getProduct } from "@/lib/products";
 
@@ -43,7 +51,10 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
   );
   const remove = useCallback((id: string) => setIds((cur) => cur.filter((x) => x !== id)), []);
 
-  const value = useMemo(() => ({ ids, count: ids.length, has, toggle, remove }), [ids, has, toggle, remove]);
+  const value = useMemo(
+    () => ({ ids, count: ids.length, has, toggle, remove }),
+    [ids, has, toggle, remove],
+  );
   return <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>;
 }
 

@@ -30,3 +30,9 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Local data (SQLite + uploaded images) and secrets
+data/
+.env
+.env.*
+!.env.example

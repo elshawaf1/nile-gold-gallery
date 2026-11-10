@@ -3,7 +3,15 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 /** Fades and slides its content in the first time it scrolls into view. */
-export function Reveal({ children, delay = 0, className }: { children: ReactNode; delay?: number; className?: string }) {
+export function Reveal({
+  children,
+  delay = 0,
+  className,
+}: {
+  children: ReactNode;
+  delay?: number;
+  className?: string;
+}) {
   const ref = useRef<HTMLDivElement>(null);
   const [shown, setShown] = useState(false);
 
@@ -24,7 +32,11 @@ export function Reveal({ children, delay = 0, className }: { children: ReactNode
   }, []);
 
   return (
-    <div ref={ref} style={{ transitionDelay: `${delay}ms` }} className={cn("reveal", shown && "reveal-in", className)}>
+    <div
+      ref={ref}
+      style={{ transitionDelay: `${delay}ms` }}
+      className={cn("reveal", shown && "reveal-in", className)}
+    >
       {children}
     </div>
   );

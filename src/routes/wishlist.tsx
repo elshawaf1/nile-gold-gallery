@@ -1,21 +1,23 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Heart, ShoppingBag } from "lucide-react";
-import { toast } from "sonner";
+import { Heart } from "lucide-react";
 
 import { ProductCard } from "@/components/store/ProductCard";
 import { Reveal } from "@/components/store/Reveal";
 import { Button } from "@/components/ui/button";
-import { useCart } from "@/lib/cart";
-import { getProduct, type Product } from "@/lib/products";
+import { useCatalog } from "@/lib/catalog";
+import { useI18n } from "@/lib/i18n";
 import { useWishlist } from "@/lib/wishlist";
 
 export const Route = createFileRoute("/wishlist")({
   head: () => ({
     meta: [
-      { title: "Your saved gold pieces | Dahab" },
-      { name: "description", content: "The gold necklaces, rings and coins you saved at Dahab." },
-      { property: "og:title", content: "Saved gold pieces | Dahab" },
-      { property: "og:description", content: "Your wishlist of gold pieces from Dahab, Cairo." },
+      { title: "القطع المحفوظة | الصفا المروة" },
+      { name: "description", content: "القطع الذهبية التي حفظتها في الصفا المروة." },
+      { property: "og:title", content: "Saved gold pieces | Al-Safa Al-Marwa" },
+      {
+        property: "og:description",
+        content: "Your wishlist of gold pieces from Dekernes, Dakahlia.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -25,41 +27,33 @@ export const Route = createFileRoute("/wishlist")({
 
 function WishlistPage() {
   const { ids } = useWishlist();
-  const { add, setOpen } = useCart();
-  const items = ids.map(getProduct).filter((p): p is Product => !!p);
+  const { t } = useI18n();
+  const { products } = useCatalog();
+  const items = products.filter((product) => ids.includes(product.id));
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8">
       <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border pb-4">
         <div>
-          <h1 className="font-sans text-2xl font-semibold">Saved pieces</h1>
-          <p className="text-sm text-muted-foreground">{items.length} items</p>
+          <p className="eyebrow mb-2 text-gold-strong">Al-Safa Al-Marwa</p>
+          <h1 className="font-sans text-2xl font-semibold sm:text-3xl">{t("wishlist.title")}</h1>
+          <p className="text-sm text-muted-foreground">
+            {t("wishlist.items", { n: items.length })}
+          </p>
         </div>
-        {items.length > 0 && (
-          <Button
-            variant="ink"
-            onClick={() => {
-              items.forEach((p) => add(p.id));
-              toast.success(`Added ${items.length} pieces to cart`);
-              setOpen(true);
-            }}
-          >
-            <ShoppingBag /> Add all to cart
-          </Button>
-        )}
       </div>
 
       {items.length === 0 ? (
         <div className="flex flex-col items-center gap-4 py-24 text-center">
-          <div className="grid size-16 place-items-center rounded-full bg-gold-soft">
+          <div className="grid size-16 place-items-center rounded-full border border-gold/25 bg-gold/10 text-gold-strong">
             <Heart className="size-7" />
           </div>
           <div>
-            <p className="font-medium">No saved pieces yet</p>
-            <p className="mt-1 text-sm text-muted-foreground">Tap the heart on any piece to save it here.</p>
+            <p className="font-medium">{t("wishlist.empty")}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{t("wishlist.emptyHint")}</p>
           </div>
           <Button asChild variant="gold">
-            <Link to="/">Browse gold</Link>
+            <Link to="/">{t("action.browse")}</Link>
           </Button>
         </div>
       ) : (

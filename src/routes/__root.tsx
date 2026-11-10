@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
   type ErrorComponentProps,
@@ -11,12 +12,16 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { reportLovableError } from "../lib/lovable-error-reporting";
-import { CartSheet } from "@/components/store/CartSheet";
 import { SiteFooter } from "@/components/store/SiteFooter";
 import { SiteHeader } from "@/components/store/SiteHeader";
 import { Toaster } from "@/components/ui/sonner";
-import { CartProvider } from "@/lib/cart";
+import { CatalogProvider } from "@/lib/catalog";
+import type { CatalogData } from "@/lib/catalog-types";
+import { getCatalog } from "@/server/catalog";
+import { getGoldRates, type GoldRatePayload } from "@/lib/gold-api";
+import { GoldRatesProvider } from "@/lib/gold-rates";
+import { THEME_INIT_SCRIPT, ThemeProvider } from "@/lib/theme";
+import { I18nProvider } from "@/lib/i18n";
 import { WishlistProvider } from "@/lib/wishlist";
 import { BackToTop } from "@/components/store/BackToTop";
 
@@ -24,17 +29,20 @@ function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <h2 className="mt-4 text-xl font-semibold text-foreground">Page not found</h2>
+        <p className="eyebrow">404</p>
+        <h1 className="mt-3 text-5xl font-bold text-gold-strong">404</h1>
+        <h2 className="mt-3 text-xl font-semibold text-foreground">
+          الصفحة غير موجودة · Page not found
+        </h2>
         <p className="mt-2 text-sm text-muted-foreground">
-          The page you're looking for doesn't exist or has been moved.
+          الصفحة التي تبحث عنها غير موجودة أو تم نقلها.
         </p>
         <div className="mt-6">
           <Link
             to="/"
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex items-center justify-center rounded-full bg-gold px-5 py-2.5 text-sm font-semibold text-gold-foreground transition hover:brightness-105"
           >
-            Go home
+            الرئيسية · Go home
           </Link>
         </div>
       </div>
@@ -46,17 +54,18 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
   console.error(error);
   const router = useRouter();
   useEffect(() => {
-    reportLovableError(error, { boundary: "tanstack_root_error_component" });
+    // Surface the error locally; no third-party telemetry is attached.
+    console.error(error);
   }, [error]);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="text-xl font-semibold tracking-tight text-foreground">
-          This page didn't load
+          تعذر تحميل الصفحة · This page didn't load
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Something went wrong on our end. You can try refreshing or head back home.
+          حدث خطأ من جانبنا. جرّب تحديث الصفحة أو العودة للرئيسية.
         </p>
         <div className="mt-6 flex flex-wrap justify-center gap-2">
           <button
@@ -64,15 +73,15 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
               router.invalidate();
               reset();
             }}
-            className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+            className="inline-flex items-center justify-center rounded-full bg-gold px-5 py-2.5 text-sm font-semibold text-gold-foreground transition hover:brightness-105"
           >
-            Try again
+            إعادة المحاولة · Try again
           </button>
           <a
             href="/"
-            className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            className="inline-flex items-center justify-center rounded-full border border-input bg-background px-5 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent"
           >
-            Go home
+            الرئيسية · Go home
           </a>
         </div>
       </div>
@@ -81,17 +90,32 @@ function ErrorComponent({ error, reset }: ErrorComponentProps) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  loader: async ({ context }) => {
+    const [catalog, goldRates] = await Promise.all([
+      context.queryClient.ensureQueryData({
+        queryKey: ["catalog"],
+        queryFn: () => getCatalog(),
+      }),
+      context.queryClient.ensureQueryData({
+        queryKey: ["gold-rates"],
+        queryFn: () => getGoldRates(),
+        staleTime: 5 * 60 * 1000,
+      }),
+    ]);
+    return { catalog, goldRates };
+  },
   head: () => ({
-    // Replace these placeholders with the app's name and description when first building the app.
-    // Each content route, / included, must still set its own head(). Never add og:image or
-    // twitter:image here: every page without its own would inherit the root's preview image.
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Dahab — Fine Gold Jewelry in Cairo" },
-      { name: "description", content: "Browse 18k, 21k and 24k gold jewelry from Dahab Gold House, Cairo." },
-      { property: "og:title", content: "Dahab Gold House" },
-      { property: "og:description", content: "Gold jewelry store in Cairo, Egypt." },
+      { title: "الصفا المروة — Al-Safa Al-Marwa | Gold Jewelry in Dakahlia" },
+      {
+        name: "description",
+        content:
+          "مجوهرات ذهب عيار ١٨ و٢١ و٢٤ من الصفا المروة، دكرنس، الدقهلية. أسعار محدثة بسعر الذهب اليوم.",
+      },
+      { property: "og:title", content: "الصفا المروة | Al-Safa Al-Marwa" },
+      { property: "og:description", content: "Gold jewelry store in Dekernes, Dakahlia, Egypt." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -100,13 +124,13 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Amiri:wght@400&family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cairo:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&family=Manrope:wght@300;400;500;600&display=swap",
       },
       {
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
     ],
   }),
   shellComponent: RootShell,
@@ -117,8 +141,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="ar" dir="rtl" suppressHydrationWarning>
       <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
         <HeadContent />
       </head>
       <body>
@@ -129,26 +154,54 @@ function RootShell({ children }: { children: ReactNode }) {
   );
 }
 
+function RootChrome() {
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const isAdmin = pathname.startsWith("/admin");
+
+  if (isAdmin) {
+    return (
+      <div className="min-h-screen bg-background text-foreground">
+        <Outlet />
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="flex min-h-screen flex-col bg-background text-foreground">
+        <SiteHeader />
+        <main className="flex-1">
+          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+          <Outlet />
+        </main>
+        <SiteFooter />
+      </div>
+      <BackToTop />
+    </>
+  );
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const { catalog, goldRates } = Route.useLoaderData() as {
+    catalog: CatalogData;
+    goldRates: GoldRatePayload;
+  };
 
   return (
     <QueryClientProvider client={queryClient}>
-      <CartProvider>
-       <WishlistProvider>
-        <div className="flex min-h-screen flex-col bg-background text-foreground">
-          <SiteHeader />
-          <main className="flex-1">
-            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-            <Outlet />
-          </main>
-          <SiteFooter />
-        </div>
-        <CartSheet />
-        <BackToTop />
-        <Toaster position="top-center" />
-       </WishlistProvider>
-      </CartProvider>
+      <I18nProvider>
+        <ThemeProvider>
+          <CatalogProvider initialCatalog={catalog}>
+            <GoldRatesProvider initialRates={goldRates}>
+              <WishlistProvider>
+                <RootChrome />
+                <Toaster position="top-center" />
+              </WishlistProvider>
+            </GoldRatesProvider>
+          </CatalogProvider>
+        </ThemeProvider>
+      </I18nProvider>
     </QueryClientProvider>
   );
 }

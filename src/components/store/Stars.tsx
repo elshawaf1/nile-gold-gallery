@@ -1,11 +1,21 @@
 import { Star } from "lucide-react";
 
+import { useI18n } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 
-export function Stars({ rating, reviews, className }: { rating: number; reviews?: number; className?: string }) {
+export function Stars({
+  rating,
+  reviews,
+  className,
+}: {
+  rating: number;
+  reviews?: number;
+  className?: string;
+}) {
+  const { t } = useI18n();
   return (
     <div className={cn("flex items-center gap-1.5 text-xs", className)}>
-      <div className="flex" aria-label={`${rating} out of 5 stars`}>
+      <div className="flex" aria-label={t("stars.aria", { rating })}>
         {[1, 2, 3, 4, 5].map((i) => (
           <Star
             key={i}
